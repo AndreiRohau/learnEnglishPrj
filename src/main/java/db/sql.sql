@@ -1,0 +1,1 @@
+select * from belhard_project1.phrases;
