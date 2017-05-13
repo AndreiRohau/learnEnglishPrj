@@ -1,3 +1,5 @@
+package module;
+
 /**
  * Created by rohau.andrei on 05.05.2017.
  */
@@ -17,7 +19,7 @@ public class User {
 
     @Override
     public String toString(){
-        return "User [ " + name + "\t" + password + "\t" +phrasesPerDay + " ]";
+        return "module.User [ " + name + "\t" + password + "\t" +phrasesPerDay + " ]";
     }
 
     public int getId() {

@@ -1,3 +1,5 @@
+package module;
+
 /**
  * Created by rohau.andrei on 05.05.2017.
  */
@@ -15,7 +17,7 @@ public class Phrase {
 
     @Override
     public String toString(){
-        return "Phrase [ " + phrase_id + "\t" + phrase_ru + "\t" +phrase_en + " ]";
+        return "module.Phrase [ " + phrase_id + "\t" + phrase_ru + "\t" +phrase_en + " ]";
     }
 
 

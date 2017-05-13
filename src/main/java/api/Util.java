@@ -1,3 +1,5 @@
+package api;
+
 import java.util.Scanner;
 import java.util.logging.Logger;
 
