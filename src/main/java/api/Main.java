@@ -2,13 +2,14 @@ package api;
 
 import db.DBProcessor;
 import module.Module;
-
 import java.sql.*;
-
 import static api.Util.outWrite;
 
 /**
  * Created by rohau.andrei on 04.05.2017.
+ * скрипты в СКЛ файл!!!!! по созданию таблиц в БД!!
+ * статистику -
+ * сколько у него фраз в словаре, сколько тестов он прошел, % правильных ответов.
  */
 public class Main {
     private static final String URL = "jdbc:mysql://localhost:3306/mysql";
@@ -18,8 +19,11 @@ public class Main {
     private static final String PASSWORD = "root";
 
     public static void main(String[] args) throws SQLException {
+        //getting connection to database
         DBProcessor db = new DBProcessor();
         Connection conn = db.getConnection(URLFIXED, USERNAME, PASSWORD);
+
+        //START TESTS----------------------------------------------
 
         //test get phrase by ID
 //        String query = "select * from belhard_project1.phrases where phrase_id = 1 and phrase_ru = \"ХЛОП\""; //where" helps select by ID
@@ -39,22 +43,29 @@ public class Main {
 //        dao.DBMethods neo = new dao.DBMethods();
 //        module.Module ph = neo.selectById(conn, 3);
 //        System.out.println(ph);
-        //END
 
-        //MAIN START!!!!!
+        //test add new phrase method
+//        MainMenu ph = new MainMenu();
+//        ph.addPhrase(conn, 13);
+
+        // END TESTS-----------------------------------------------------
+
+        //STARTmenu!!!!!
         Module user = StartMenu.regOrLog(conn);
-        outWrite("TEST_!_!_! В мэйне юзер_1Д: " + user);
+        //END startMenu!!!!!
 
-
-        //try catch NullPointEX
+        //MainMenu!!!!!
         try {
-            MainMenu.letsStudy(user);
-        }catch (NullPointerException ex){
-            outWrite(" if NULL\t" + ex + "\nPROGRAMME WAS CLOSED BY YOU");
+            MainMenu nonStaticMainMenu = new MainMenu();
+            nonStaticMainMenu.letsStudy(conn, user);
         }
+        catch (NullPointerException ex){
+            outWrite("PROGRAMME WAS CLOSED BY YOU");
+        }
+        //END MainMenu!!!!!
+
 
         conn.close();
-        //MAIN END!!!!!
 
     }
 

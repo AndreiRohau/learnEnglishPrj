@@ -1,6 +1,5 @@
 package module;
 
-
 import java.util.HashMap;
 
 /**
@@ -27,7 +26,6 @@ public class Module {
         this.phrase_en = phrase_en;
     }
 
-
     public Module(int id, String name, String password, String phrasesPerDay) {
         this.userId = id;
         this.name = name;
@@ -35,6 +33,12 @@ public class Module {
         this.phrasesPerDay = phrasesPerDay;
     }
 
+    public Module(int id, int phrase_id) {
+        this.userId = id;
+        this.phrase_id = phrase_id;
+    }
+
+//    //phrase toString
 //    @Override
 //    public String toString(){
 //        return "module.Phrase [ " + phrase_id + "\t" + phrase_ru + "\t" +phrase_en + " ]";

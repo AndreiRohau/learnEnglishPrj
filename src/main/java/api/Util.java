@@ -16,7 +16,7 @@ public class Util {
     }
 
     public static void outWrite(String smth) {
-        log.info(smth);
+        log.info("\n\t"+smth);
     }
 
 }
