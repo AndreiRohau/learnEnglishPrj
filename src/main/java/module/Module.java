@@ -1,6 +1,7 @@
 package module;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Created by rohau.andrei on 12.05.2017.
@@ -16,6 +17,7 @@ public class Module {
     private int phrase_id;
     private String phrase_ru;
     private String phrase_en;
+    private LinkedList<Integer> phIdList;
 
     public Module() {
     }
@@ -121,5 +123,13 @@ public class Module {
 
     public void setPhrase_en(String phrase_en) {
         this.phrase_en = phrase_en;
+    }
+
+    public LinkedList<Integer> getPhIdList() {
+        return phIdList;
+    }
+
+    public void setPhIdList(LinkedList<Integer> phIdList) {
+        this.phIdList = phIdList;
     }
 }

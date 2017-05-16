@@ -13,7 +13,7 @@ import static api.Util.scannr;
 /**
  * Created by rohau.andrei on 14.05.2017.
  */
-public class MainMenu {
+public class UserMenu {
 
     public void letsStudy(Connection conn, Module user) throws SQLException {
         outWrite("Hello MR: " + user.getName());
@@ -26,7 +26,8 @@ public class MainMenu {
                 "\n\t1. Add a new phrase into your vocabulary." +
                 "\n\t2. Start test!" +
                 "\n\t3. Achievements!" +
-                "\n\t4. Quit.");
+                "\n\t4. Settings" +
+                "\n\t5. Quit.");
         String answer = scannr();
         switch (answer) {
             case "1":
@@ -36,15 +37,17 @@ public class MainMenu {
                 mainMenu(conn, user);
                 break;
             case "2":
-                //метод проверки можно ли давать тест! тест только 1 раз за сутки!
-                //узнать когда был предыдущий тест ТУТ!!!
+                //узнать когда был предыдущий тест ТУТ!!! todo
 
                 //создаем лист фраз для теста
-                HashMap<String, String> list = getTestPhraseList(conn, user);
-                outWrite("getTestPhraseList - worked");
+                user = getTestPhraseList(conn, user);
                 //берем лист этот и загоняем в метод ТЕСТ, где тетируем их
-                startTest(list);
-                outWrite("StartTest finished! Your results are: ");
+                if(user.getTestPhrases().keySet().size() > 0) {
+                    startTest(user);
+                    outWrite("StartTest finished! Your results are: ....."); //TODO
+                }else {
+                    outWrite("Did not get phrases for test, NO PHRASES FOUND.");
+                }
                 mainMenu(conn, user);
                 break;
             case "3":
@@ -53,6 +56,11 @@ public class MainMenu {
                 mainMenu(conn, user);
                 break;
             case "4":
+                //изменения кол фраз в день
+                user = settings(conn, user);
+                mainMenu(conn, user);
+                break;
+            case "5":
                 quit();
                 break;
         }
@@ -101,31 +109,39 @@ public class MainMenu {
         }
     }
 
-    //метод создания списка из фраз, из [user_phrasess] нашего юзера
-    public HashMap<String, String> getTestPhraseList(Connection conn, Module user) throws SQLException{
+    //метод создания списка из фраз, из [user_phrases_failedd] затем из [user_phrasess] нашего юзера
+    public Module getTestPhraseList(Connection conn, Module user) throws SQLException{
         outWrite("Creating list of phrases for your test! In process...");
         int phPerDay = Integer.parseInt(user.getPhrasesPerDay());
-        int[] phIdList = DBMethods.selectPhByUserId(conn, user);
         HashMap<String, String> list = new HashMap<>();
-        for(int i = 0; i < phIdList.length; i++){
-            Module phrase = DBMethods.selectPhById(conn, phIdList[i]);
-            outWrite("works");
-            user.setTestPhrases(list);
-            user.getTestPhrases().put(phrase.getPhrase_ru(), phrase.getPhrase_en());
-            outWrite("not works");
+        user.setTestPhrases(list);
+        //from [user_phrases_failedd]
+        user = DBMethods.selectPhFailedByUserId(conn, user);
+        //из [user_phrasess]
+        user = DBMethods.selectPhByUserId(conn, user);
+        int length = user.getPhIdList().size();
+        outWrite("user.getPhIdList().size() is     " + length);
+        for(int i : user.getPhIdList()){
+            Module phrase = DBMethods.selectPhById(conn, i);
+            try {
+                user.getTestPhrases().put(phrase.getPhrase_ru(), phrase.getPhrase_en());
+            }catch(NullPointerException ex) {
+            }
         }
-        return user.getTestPhrases();
+        outWrite("HASHMAP length out - " + String.valueOf(user.getTestPhrases().keySet().size()));
+        return user;
     }
 
-
-    public void startTest(HashMap<String, String> list){
+    //метод реализации ТЕСТА
+    public void startTest(Module user){
+        HashMap<String, String> list = user.getTestPhrases();
         outWrite("Ready to start test? (y/n)");
 
         String answer = scannr();
         if(answer.equals("y")){
-            //счетчик запуска теста, чтобы выдавать его раз в сутки
-            //++ сбор статы о правильных ответах
-            //++ удаляются из [user_phrasess] или еще и добавляюся в [user_phrases_failedd]
+            //счетчик запуска теста, чтобы выдавать его раз в сутки //todo
+            //++ сбор статы о правильных ответах //todo
+            //++ удаляются из [user_phrasess] или еще и добавляюся в [user_phrases_failedd] // todo
             for (String key : list.keySet()) {
                 outWrite("Translate into ENG: " + key);
                 answer = scannr();
@@ -143,15 +159,29 @@ public class MainMenu {
                 }
             }
         }else {
-            outWrite("Test wasn't started!");
+            outWrite("TEST CANCELED!");
         }
     }
 
-
+    //инфо юзера
     public void achieveStatus(){
-        //метод к юзеру зальем статус инфу
-        //!! метод пишем тут
+        //метод к юзеру зальем статус инфу //todo
+        //сводная инфа по юзеру - фраз в словаре, тестов он прошел, % правильных ответов
     }
+
+    public Module settings(Connection conn, Module user) throws SQLException {
+        outWrite("If you want to update amount of phrases for daily tests enter preferable number " +
+                "(ex.: 1, 2, 3..), otherwise enter (n)");
+        String answer = scannr();
+        if(Integer.parseInt(answer) >= 0) {
+            user = DBMethods.updatePhPerDay(conn, user, Integer.parseInt(answer));
+            outWrite("Amount of phrases per day updated, now: " + user.getPhrasesPerDay());
+        }else{
+            user = user;
+        }
+        return user;
+    }
+
     public void quit(){
         outWrite("Goodbye. 再见。Arrivederci.");
     }

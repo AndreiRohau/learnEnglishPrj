@@ -3,6 +3,7 @@ package dao;
 import api.Util;
 import module.Module;
 import java.sql.*;
+import java.util.LinkedList;
 
 /**
  * Created by rohau.andrei on 05.05.2017.
@@ -110,26 +111,75 @@ public class DBMethods {
 
     }
 
-    // список [phrases_id] по [user_id] в таблице [user_phrasess]
-    public static int[] selectPhByUserId(Connection conn, Module user) throws SQLException {
+    // список [phrases_id] по [user_id] в таблице [user_phrases_failedd]
+    public static Module selectPhFailedByUserId(Connection conn, Module user) throws SQLException {
+        //достаем кол-во фраз для теста пользователя
         int phPerDay = Integer.parseInt(user.getPhrasesPerDay());
-        int[] phIdList = new int[phPerDay];
-        //Util.outWrite("phPerDay " + phPerDay + " phIdList " + phIdList.length);
+        //массив по размеру количества фраз, для заполнения его [phrases_id]
+        int[] phIdListFailed = new int[phPerDay];
+        String query = "select * from belhard_project1.user_phrases_failedd where users_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        //заполняем пока существуют [phrases_id] , или пока хватает места в массиве - [phrases_id]
+        while(resSet.next()) {
+            int phrases_id = resSet.getInt("phrases_id");
+            if(phPerDay > 0 ) {
+                phPerDay--;
+                phIdListFailed[phPerDay] = phrases_id;
+            }
+        }
+        statement.close();
+        LinkedList<Integer> phIdList = new LinkedList();
+        //создаем лист и переносим объекты из массива в лист
+        for(int e : phIdListFailed) {
+            if (e != 0) {
+                phIdList.add(e);
+            }
+        }
+        //закидываем лист к экземпляру ЮЗЕРА
+        user.setPhIdList(phIdList);
+        return user;
+    }
+
+    // список [phrases_id] по [user_id] в таблице [user_phrasess]
+    public static Module selectPhByUserId(Connection conn, Module user) throws SQLException {
+        int phPerDay = Integer.parseInt(user.getPhrasesPerDay());
+        //количество недостающий храз для теста
+        LinkedList<Integer> list = user.getPhIdList();
+        int amount = phPerDay - list.size();
+        int[] phIdArr = new int[amount];
         String query = "select * from belhard_project1.user_phrasess where users_id = " + user.getUserId();
         Statement statement = conn.createStatement();
         ResultSet resSet = statement.executeQuery(query);
         while(resSet.next()) {
             int phrases_id = resSet.getInt("phrases_id");
-            if(phPerDay > 0) {
-                phPerDay--;
-                phIdList[phPerDay] = phrases_id;
-                //Util.outWrite("ADDED " + phrases_id);
+            if(amount > 0) {
+                amount--;
+                phIdArr[amount] = phrases_id;
             }
         }
         statement.close();
-        return phIdList;
+        //переносим объекты из массива в лист экземпляра юзера
+        for(int e : phIdArr) {
+            if (e != 0) {
+                list.add(e);
+            }else {
+                Util.outWrite("didnt work");
+            }
+        }
+        //закидываем лист к экземпляру ЮЗЕРА
+        user.setPhIdList(list);
+        return user;
     }
 
-
+    //update users ph per Day
+    public static Module updatePhPerDay(Connection conn, Module user, int phPerDay) throws SQLException {
+        String query = "update belhard_project1.users set user_phrases_per_day = " + phPerDay +
+                " WHERE user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        int result = statement.executeUpdate(query);
+        user.setPhrasesPerDay(String.valueOf(phPerDay));
+        return user;
+    }
 
 }

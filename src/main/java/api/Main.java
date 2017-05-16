@@ -45,7 +45,7 @@ public class Main {
 //        System.out.println(ph);
 
         //test add new phrase method
-//        MainMenu ph = new MainMenu();
+//        UserMenu ph = new UserMenu();
 //        ph.addPhrase(conn, 13);
 
         // END TESTS-----------------------------------------------------
@@ -54,15 +54,15 @@ public class Main {
         Module user = StartMenu.regOrLog(conn);
         //END startMenu!!!!!
 
-        //MainMenu!!!!!
+        //UserMenu!!!!!
         try {
-            MainMenu nonStaticMainMenu = new MainMenu();
+            UserMenu nonStaticMainMenu = new UserMenu();
             nonStaticMainMenu.letsStudy(conn, user);
         }
         catch (NullPointerException ex){
             outWrite("PROGRAMME WAS CLOSED BY YOU");
         }
-        //END MainMenu!!!!!
+        //END UserMenu!!!!!
 
 
         conn.close();
