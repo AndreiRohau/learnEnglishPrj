@@ -39,7 +39,7 @@ public class DBMethods {
         return user;
     }
 
-    // поиск фразы по айди в таблице phrases
+    // поиск фразы по айди в таблице [phrases]
     public static Module selectPhById(Connection conn, int id) throws SQLException {
         String query = "select * from belhard_project1.phrases where phrase_id = " + id;
         Statement statement = conn.createStatement();
@@ -88,6 +88,52 @@ public class DBMethods {
         return phrase;
     }
 
+    //вытягиваем ID всеx фраз из таблицы [phrases]
+    public static LinkedList<Integer> selectAllPh(Connection conn) throws SQLException {
+        LinkedList<Integer> allPhList = new LinkedList<>();
+        String query = "select * from belhard_project1.phrases";
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        Module phrase = null;
+        while(resSet.next()) {
+            int phrase_id = resSet.getInt("phrase_id");
+//            String phrase_ru = resSet.getString("phrase_ru");
+//            String phrase_en = resSet.getString("phrase_en");
+//            phrase = new Module(phrase_id, phrase_ru, phrase_en);
+            allPhList.add(phrase_id);
+        }
+        statement.close();
+        return allPhList;
+    }
+
+    //вытягиваем ID всеx фраз [user_id] из таблицы [user_phrasess]
+    public static LinkedList<Integer> selectAllUserPh(Connection conn, Module user) throws SQLException {
+        LinkedList<Integer> allPhList = new LinkedList<>();
+        String query = "select * from belhard_project1.user_phrasess where users_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        while(resSet.next()) {
+            int phrases_id = resSet.getInt("phrases_id");
+            allPhList.add(phrases_id);
+        }
+        statement.close();
+        return allPhList;
+    }
+
+    //вытягиваем ID всеx фраз [user_id] из таблицы [user_phrases_failedd]
+    public static LinkedList<Integer> selectAllFailedPh(Connection conn, Module user) throws SQLException {
+        LinkedList<Integer> allFailedPhList = new LinkedList<>();
+        String query = "select * from belhard_project1.user_phrases_failedd where users_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        while(resSet.next()) {
+            int failed_phrase_id = resSet.getInt("failed_phrase_id");
+            allFailedPhList.add(failed_phrase_id);
+        }
+        statement.close();
+        return allFailedPhList;
+    }
+
     //добавление новой фразы
     public static void insertNewPhrase(Connection conn, String ph_ru, String ph_en) throws SQLException {
         String INSERT = "insert into belhard_project1.phrases " +
@@ -108,7 +154,6 @@ public class DBMethods {
         prepInsert.setInt(2,phrase_id);
         prepInsert.execute();
         prepInsert.close();
-
     }
 
     // список [phrases_id] по [user_id] в таблице [user_phrases_failedd]
@@ -122,7 +167,7 @@ public class DBMethods {
         ResultSet resSet = statement.executeQuery(query);
         //заполняем пока существуют [phrases_id] , или пока хватает места в массиве - [phrases_id]
         while(resSet.next()) {
-            int phrases_id = resSet.getInt("phrases_id");
+            int phrases_id = resSet.getInt("failed_phrase_id");
             if(phPerDay > 0 ) {
                 phPerDay--;
                 phIdListFailed[phPerDay] = phrases_id;
@@ -181,5 +226,35 @@ public class DBMethods {
         user.setPhrasesPerDay(String.valueOf(phPerDay));
         return user;
     }
+
+    //delete phrase from [user_phrasess]
+    public static void deletePh(Connection conn, Module user, int ph) throws SQLException {
+        String query = "delete from belhard_project1.user_phrasess where users_id = " + user.getUserId() +
+                " and phrases_id = " + ph;
+        Statement statement = conn.createStatement();
+        boolean result = statement.execute(query);
+    }
+
+    //delete phrase from [user_phrases_failedd]
+    public static void deleteFailedPh(Connection conn, Module user, int ph) throws SQLException {
+        String query = "delete from belhard_project1.user_phrases_failedd where users_id = " + user.getUserId() +
+                " and failed_phrase_id = " + ph;
+        Statement statement = conn.createStatement();
+        boolean result = statement.execute(query);
+    }
+
+
+
+    //добавление фразы пользователю в таблицу [user_phrases_failedd]
+    public static void insertToPhrasesFailed(Connection conn, int user_id, int phrase_id) throws SQLException {
+        String INSERT = "insert into belhard_project1.user_phrases_failedd " +
+                "(users_id, failed_phrase_id) values (?,?)";
+        PreparedStatement prepInsert = conn.prepareStatement(INSERT);
+        prepInsert.setInt(1,user_id);
+        prepInsert.setInt(2,phrase_id);
+        prepInsert.execute();
+        prepInsert.close();
+    }
+
 
 }

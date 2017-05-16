@@ -6,6 +6,7 @@ import module.Module;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import static api.Util.outWrite;
 import static api.Util.scannr;
@@ -31,9 +32,20 @@ public class UserMenu {
         String answer = scannr();
         switch (answer) {
             case "1":
+                //добавляем пользователю все фразы которых у него в списках нет (вероятен повтор того что было изучено)
+                outWrite("There are phrases in vocabulary, want to add them all? (y/n)");
+                String res = scannr();
+                if(res.equals("y")){
+                    //except those you already have
+                    addAllPhrases(conn, user);
+                }
                 //добавляем новую фразу в [phrases], если таковой там еще не было
                 //добавляем фразу в список к изучению залогиневшегося
-                addPhrase(conn, user.getUserId());
+                outWrite("Still have a new phrase to save in your dictionary? (y/n)");
+                res = scannr();
+                if(res.equals("y")) {
+                    addPhrase(conn, user);
+                }
                 mainMenu(conn, user);
                 break;
             case "2":
@@ -43,7 +55,7 @@ public class UserMenu {
                 user = getTestPhraseList(conn, user);
                 //берем лист этот и загоняем в метод ТЕСТ, где тетируем их
                 if(user.getTestPhrases().keySet().size() > 0) {
-                    startTest(user);
+                    startTest(conn, user);
                     outWrite("StartTest finished! Your results are: ....."); //TODO
                 }else {
                     outWrite("Did not get phrases for test, NO PHRASES FOUND.");
@@ -63,10 +75,14 @@ public class UserMenu {
             case "5":
                 quit();
                 break;
+            default :
+                mainMenu(conn, user);
+                break;
         }
     }
 
-    public void addPhrase(Connection conn, int users_id) throws SQLException{
+    public void addPhrase(Connection conn, Module user) throws SQLException{
+        int users_id = user.getUserId();
         Module ph = null;
         int ph_id = 0;
         outWrite("First, write below the phrase in RUSSIAN: ");
@@ -109,6 +125,36 @@ public class UserMenu {
         }
     }
 
+    public void addAllPhrases(Connection conn, Module user) throws SQLException {
+        //get phrase_id from [phrases] = put into a list1
+        LinkedList<Integer> commonList = DBMethods.selectAllPh(conn);
+        outWrite("commonList : " + commonList);
+        //get phrase_id from [user_phrasess] put into list2
+        LinkedList<Integer> studyList = DBMethods.selectAllUserPh(conn, user);
+        outWrite("studyList : " + studyList + "\t" + studyList.size());
+        //get phrase_id from [failed_phrase_id] put into list3
+        LinkedList<Integer> failedList = DBMethods.selectAllFailedPh(conn, user);
+        outWrite("failedList : " + failedList + "\t" + failedList.size());
+        //заполняем studyList - failedList'om
+        for(int i = 0; i < failedList.size(); i++){
+            studyList.add(failedList.get(i));
+        }
+        //final_Ids list = commonList - minus - studyList
+        LinkedList<Integer> finalIds = new LinkedList<>();
+        for(int i = 0; i < commonList.size(); i++) {
+            int id = commonList.get(i);
+            for(int it = 0; it < studyList.size(); it++){
+                int studyId = studyList.get(it);
+                if(id == studyId) break;
+                finalIds.add(id);
+            }
+        }
+        //put PHRASES using final_Ids_list into [user_phrasess]
+        for(int x : finalIds) {
+            DBMethods.insertToUserPhrases(conn, user.getUserId(), x);
+        }
+    }
+
     //метод создания списка из фраз, из [user_phrases_failedd] затем из [user_phrasess] нашего юзера
     public Module getTestPhraseList(Connection conn, Module user) throws SQLException{
         outWrite("Creating list of phrases for your test! In process...");
@@ -133,29 +179,43 @@ public class UserMenu {
     }
 
     //метод реализации ТЕСТА
-    public void startTest(Module user){
+    public void startTest(Connection conn, Module user) throws SQLException{
         HashMap<String, String> list = user.getTestPhrases();
         outWrite("Ready to start test? (y/n)");
-
         String answer = scannr();
         if(answer.equals("y")){
             //счетчик запуска теста, чтобы выдавать его раз в сутки //todo
             //++ сбор статы о правильных ответах //todo
             //++ удаляются из [user_phrasess] или еще и добавляюся в [user_phrases_failedd] // todo
+            Module phrase = null;
+            boolean ru;
+            boolean en;
             for (String key : list.keySet()) {
-                outWrite("Translate into ENG: " + key);
+                phrase = DBMethods.selectPhByRuEn(conn, key, list.get(key));
+                int phrase_id = phrase.getPhrase_id();
+                //delete phrase from [user_phrasess]
+                DBMethods.deletePh(conn, user, phrase_id);
+                DBMethods.deleteFailedPh(conn, user, phrase_id);
+                //test starts here
+                outWrite("Translate into ENG: " + phrase.getPhrase_ru());
                 answer = scannr();
-                if(answer.equals(list.get(key))){
-                    outWrite("RIGHT! " + key + " == " + answer);
+                if(answer.equals(phrase.getPhrase_en())){
+                    ru = true;
                 }else {
-                    outWrite("Mistake!!!");
+                    ru = false;
                 }
-                outWrite("Translate into RU: " + list.get(key));
+                outWrite("Translate into RU: " + phrase.getPhrase_en());
                 answer = scannr();
-                if(answer.equals(key)){
-                    outWrite("RIGHT! " + list.get(key) + " == " + answer);
+                if(answer.equals(phrase.getPhrase_ru())){
+                    en = true;
                 }else {
-                    outWrite("Mistake!!!");
+                    en = false;
+                }
+                //test result
+                if(ru && en) {
+                    outWrite("RIGHT! " + phrase.getPhrase_ru() + " == " + phrase.getPhrase_en());
+                }else {
+                    DBMethods.insertToPhrasesFailed(conn, user.getUserId(), phrase_id);
                 }
             }
         }else {
@@ -169,6 +229,7 @@ public class UserMenu {
         //сводная инфа по юзеру - фраз в словаре, тестов он прошел, % правильных ответов
     }
 
+    //изменение количество слов для теста
     public Module settings(Connection conn, Module user) throws SQLException {
         outWrite("If you want to update amount of phrases for daily tests enter preferable number " +
                 "(ex.: 1, 2, 3..), otherwise enter (n)");
@@ -182,6 +243,7 @@ public class UserMenu {
         return user;
     }
 
+    //выход из проги
     public void quit(){
         outWrite("Goodbye. 再见。Arrivederci.");
     }
