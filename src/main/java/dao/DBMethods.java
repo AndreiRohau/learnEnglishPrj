@@ -39,6 +39,89 @@ public class DBMethods {
         return user;
     }
 
+    //get last_test dayTime
+    public static Module selectLastTestEvent(Connection conn, Module user) throws SQLException {
+        String query = "select * from belhard_project1.users " +
+                "where user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        String users_last_time = null;
+        while(resSet.next()) {
+            users_last_time = resSet.getString("users_last_time");
+        }
+        statement.close();
+        user.setLastTest(users_last_time);
+        return user;
+    }
+
+    //get total tests tried
+    public static Module selectTestsTried(Connection conn, Module user) throws SQLException {
+        String query = "select * from belhard_project1.users " +
+                "where user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        int user_test_tried = 0;
+        while(resSet.next()) {
+            user_test_tried = resSet.getInt("user_test_tried");
+        }
+        statement.close();
+        user.setTestsTotal(user_test_tried);
+        return user;
+    }
+
+    //get right wrong answers
+    public static Module selectRW(Connection conn, Module user) throws SQLException {
+        String query = "select * from belhard_project1.users " +
+                "where user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        int right = 0;
+        int wrong = 0;
+        while(resSet.next()) {
+            right = resSet.getInt("rightAns");
+            wrong = resSet.getInt("wrongAns");
+        }
+        statement.close();
+        user.setRight(right);
+        user.setWrong(wrong);
+        return user;
+    }
+
+    //update TEST HAPPEND time
+    public static Module updateTimeTestEvent(Connection conn, Module user, String TimeTestEvent) throws SQLException {
+        String query = "update belhard_project1.users set users_last_time = \"" + TimeTestEvent +
+                "\" WHERE user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        int result = statement.executeUpdate(query);
+        user.setLastTest(TimeTestEvent);
+        return user;
+    }
+
+    //update amount of tests tried
+    public static Module updateTestsTried(Connection conn, Module user) throws SQLException {
+        int testsTotal = user.getTestsTotal();
+        String query = "update belhard_project1.users set user_test_tried = \"" + testsTotal +
+                "\" WHERE user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        int result = statement.executeUpdate(query);
+        user.setTestsTotal(testsTotal);
+        return user;
+    }
+
+    //update right wrong answers
+    public static Module updateRW(Connection conn, Module user) throws SQLException {
+        String query = "update belhard_project1.users set rightAns = \"" + user.getRight() +
+                "\" WHERE user_id = " + user.getUserId();
+        Statement statement = conn.createStatement();
+        statement.executeUpdate(query);
+        query = "update belhard_project1.users set wrongAns = \"" + user.getWrong() +
+                "\" WHERE user_id = " + user.getUserId();
+        statement = conn.createStatement();
+        statement.executeUpdate(query);
+        return user;
+    }
+
+
     // поиск фразы по айди в таблице [phrases]
     public static Module selectPhById(Connection conn, int id) throws SQLException {
         String query = "select * from belhard_project1.phrases where phrase_id = " + id;
@@ -71,6 +154,22 @@ public class DBMethods {
         return userPhrase;
     }
 
+    // пo [phrases_id] фразы у юзера по [users_id] в таблице [user_phrases_failedd]
+    public static Module selectUserIdFailedId(Connection conn, int users_id, int phrases_id) throws SQLException {
+        String query = "select * from belhard_project1.user_phrases_failedd " +
+                "where users_id = \"" + users_id + "\" and failed_phrase_id = \"" + phrases_id +"\"";
+        Statement statement = conn.createStatement();
+        ResultSet resSet = statement.executeQuery(query);
+        Module userPhrase = null;
+        while(resSet.next()) {
+            int user_id = resSet.getInt("users_id");
+            int phrase_id = resSet.getInt("failed_phrase_id");
+            userPhrase = new Module(user_id, phrase_id);
+        }
+        statement.close();
+        return userPhrase;
+    }
+
     // поиск фразы по RU EN в [phrases]
     public static Module selectPhByRuEn(Connection conn, String ph_ru, String  ph_en) throws SQLException {
         String query = "select * from belhard_project1.phrases " +
@@ -97,9 +196,6 @@ public class DBMethods {
         Module phrase = null;
         while(resSet.next()) {
             int phrase_id = resSet.getInt("phrase_id");
-//            String phrase_ru = resSet.getString("phrase_ru");
-//            String phrase_en = resSet.getString("phrase_en");
-//            phrase = new Module(phrase_id, phrase_ru, phrase_en);
             allPhList.add(phrase_id);
         }
         statement.close();
@@ -242,8 +338,6 @@ public class DBMethods {
         Statement statement = conn.createStatement();
         boolean result = statement.execute(query);
     }
-
-
 
     //добавление фразы пользователю в таблицу [user_phrases_failedd]
     public static void insertToPhrasesFailed(Connection conn, int user_id, int phrase_id) throws SQLException {

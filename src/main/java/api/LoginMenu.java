@@ -9,7 +9,7 @@ import static api.Util.*;
 /**
  * Created by rohau.andrei on 05.05.2017.
  */
-public class StartMenu {
+public class LoginMenu {
 
     public static Module regOrLog(Connection conn) throws SQLException {
         Module user = null;

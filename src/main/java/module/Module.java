@@ -12,12 +12,15 @@ public class Module {
     private String name;
     private String password;
     private String phrasesPerDay;
-    private HashMap<String, String> allPhrases;
     private HashMap<String, String> testPhrases;
     private int phrase_id;
     private String phrase_ru;
     private String phrase_en;
     private LinkedList<Integer> phIdList;
+    private String LastTest;
+    private int testsTotal;
+    private int right;
+    private int wrong;
 
     public Module() {
     }
@@ -39,12 +42,6 @@ public class Module {
         this.userId = id;
         this.phrase_id = phrase_id;
     }
-
-//    //phrase toString
-//    @Override
-//    public String toString(){
-//        return "module.Phrase [ " + phrase_id + "\t" + phrase_ru + "\t" +phrase_en + " ]";
-//    }
 
     @Override
     public String toString(){
@@ -85,14 +82,6 @@ public class Module {
         this.phrasesPerDay = phrasesPerDay;
     }
 
-    public HashMap<String, String> getAllPhrases() {
-        return allPhrases;
-    }
-
-    public void setAllPhrases(HashMap<String, String> allPhrases) {
-        this.allPhrases = allPhrases;
-    }
-
     public HashMap<String, String> getTestPhrases() {
         return testPhrases;
     }
@@ -131,5 +120,37 @@ public class Module {
 
     public void setPhIdList(LinkedList<Integer> phIdList) {
         this.phIdList = phIdList;
+    }
+
+    public String getLastTest() {
+        return LastTest;
+    }
+
+    public void setLastTest(String lastTest) {
+        LastTest = lastTest;
+    }
+
+    public int getTestsTotal() {
+        return testsTotal;
+    }
+
+    public void setTestsTotal(int testsTotal) {
+        this.testsTotal = testsTotal;
+    }
+
+    public int getRight() {
+        return right;
+    }
+
+    public void setRight(int right) {
+        this.right = right;
+    }
+
+    public int getWrong() {
+        return wrong;
+    }
+
+    public void setWrong(int wrong) {
+        this.wrong = wrong;
     }
 }

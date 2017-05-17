@@ -19,4 +19,9 @@ public class Util {
         log.info("\n\t"+smth);
     }
 
+    public static void pressToContinue(){
+        outWrite("Press any button to continue...");
+        scannr();
+    }
+
 }
