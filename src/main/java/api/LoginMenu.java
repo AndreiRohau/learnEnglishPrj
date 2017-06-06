@@ -2,16 +2,15 @@ package api;
 
 import dao.DBMethods;
 import module.Module;
-import java.sql.Connection;
+
 import java.sql.SQLException;
-import static api.Util.*;
 
-/**
- * Created by rohau.andrei on 05.05.2017.
- */
-public class LoginMenu {
+import static api.Util.outWrite;
+import static api.Util.scannr;
 
-    public static Module regOrLog(Connection conn) throws SQLException {
+class LoginMenu {
+
+    static Module regOrLog() throws SQLException {
         Module user = null;
         outWrite("WELCOME TO A PROGRAMME FOR STUDYING ENGLISH " +
                 "\n\tNOW! " +
@@ -22,20 +21,20 @@ public class LoginMenu {
                 break;
             default:
                 outWrite("Enter:\t\"r\" to register or\t \"l\" to log in or\t \"q\" to quit");
-                user = regOrLog(conn);
+                user = regOrLog();
                 break;
             case "r":
-                reg(conn);
-                user = regOrLog(conn);
+                reg();
+                user = regOrLog();
                 break;
             case "l":
-                user = log(conn);
+                user = log();
                 break;
         }
         return user;
     }
 
-    public static void reg(Connection conn) throws SQLException {
+    private static void reg() throws SQLException {
         outWrite("Enter your name to create a profile");
         String name = scannr();
         outWrite("Enter your password to create a profile");
@@ -45,29 +44,36 @@ public class LoginMenu {
         outWrite("Confirm if you want to create new profile: (y) or (n).");
         String confirm = Util.scannr();
         if(confirm.equals("y")) {
-            DBMethods.insertUserReg(conn, name, password, phrasesPerDay);
-            outWrite("Registration complete NAME:\t" + name + "\tpassword:\t" + password);
+            try {
+                DBMethods.insertUserReg(name, password, phrasesPerDay);
+                outWrite("Registration complete NAME:\t" + name + "\tpassword:\t" + password);
+            }
+            catch(SQLException e) {
+                outWrite("Problems with connection to data base.");
+            }
         }else {
             outWrite("Registration cancelled");
         }
     }
 
-    public static Module log(Connection conn) throws SQLException {
+    private static Module log() throws SQLException {
         outWrite("Enter your name below to log in: ");
         String name = scannr();
         outWrite("Enter your password to log in: ");
         String password = scannr();
         Module user = null;
-        int user_id = 0;
         try{
-            user = DBMethods.selectVerifyUser(conn, name, password);
-            user_id = user.getUserId();
+            user = DBMethods.selectVerifyUser(name, password);
             outWrite("Authorization completed, LET's STUDY!" +
-                    "\n\tFYI your profile's ID is:\t" + DBMethods.selectVerifyUser(conn, name, password).getUserId());
+                    "\n\tFYI your profile's ID is:\t" + DBMethods.selectVerifyUser(name, password).getUserId());
         }catch(NullPointerException ex) {
             outWrite("Login failed!!! Try again!");
-            regOrLog(conn);
+            regOrLog();
         }
+        catch(SQLException e) {
+            outWrite("Problems with connection to data base.");
+        }
+
         return user;
     }
 

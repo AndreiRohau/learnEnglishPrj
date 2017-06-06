@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * Created by rohau.andrei on 05.05.2017.
- */
 public class DBProcessor {
     private Connection connection;
 

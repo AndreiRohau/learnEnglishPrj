@@ -3,9 +3,6 @@ package module;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-/**
- * Created by rohau.andrei on 12.05.2017.
- */
 public class Module {
 
     private int userId;
@@ -22,9 +19,6 @@ public class Module {
     private int right;
     private int wrong;
 
-    public Module() {
-    }
-
     public Module(int phrase_id, String phrase_ru, String phrase_en) {
         this.phrase_id = phrase_id;
         this.phrase_ru = phrase_ru;
@@ -38,11 +32,6 @@ public class Module {
         this.phrasesPerDay = phrasesPerDay;
     }
 
-    public Module(int id, int phrase_id) {
-        this.userId = id;
-        this.phrase_id = phrase_id;
-    }
-
     @Override
     public String toString(){
         return "module.User [ " + name + "\t" + password + "\t" +phrasesPerDay + " ]";
@@ -54,24 +43,8 @@ public class Module {
         return userId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getPhrasesPerDay() {
@@ -94,24 +67,12 @@ public class Module {
         return phrase_id;
     }
 
-    public void setPhrase_id(int phrase_id) {
-        this.phrase_id = phrase_id;
-    }
-
     public String getPhrase_ru() {
         return phrase_ru;
     }
 
-    public void setPhrase_ru(String phrase_ru) {
-        this.phrase_ru = phrase_ru;
-    }
-
     public String getPhrase_en() {
         return phrase_en;
-    }
-
-    public void setPhrase_en(String phrase_en) {
-        this.phrase_en = phrase_en;
     }
 
     public LinkedList<Integer> getPhIdList() {
