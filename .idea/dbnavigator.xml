@@ -25,7 +25,7 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="9e72a748-25d7-4503-9f02-3716e3446c7c">
-        <schema name="belhard_project1" object-types="column, function, procedure, table, view" />
+        <schema name="belhard_project1" object-types="column, constraint, function, index, procedure, table, dataset trigger, view" />
       </connection>
     </loaded-nodes>
   </component>
